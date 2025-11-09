@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快取-代拿快递外卖平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            padding-bottom: 40px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .tabs {
+            display: flex;
+            background-color: #34495e;
+            color: white;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 16px;
+        }
+        .tab:hover {
+            background-color: #2980b9;
+        }
+        .tab.active {
+            background-color: #2980b9;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            padding: 25px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2980b9;
+            box-shadow: 0 0 0 2px rgba(41, 128, 185, 0.1);
+        }
+        button {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #1a5276;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        button.complete-btn {
+            background-color: #27ae60;
+        }
+        button.complete-btn:hover {
+            background-color: #1e8449;
+        }
+        .order-list {
+            margin-top: 25px;
+        }
+        .order-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+        .order-item:hover {
+            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+        }
+        .order-item h3 {
+            margin-bottom: 15px;
+            color: #2980b9;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        .order-info {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-pending {
+            background-color: #f39c12;
+            color: white;
+        }
+        .status-accepted {
+            background-color: #3498db;
+            color: white;
+        }
+        .status-completed {
+            background-color: #27ae60;
+            color: white;
+        }
+        .status-wait-confirm {
+            background-color: #9b59b6;
+            color: white;
+        }
+        .action-btn {
+            margin-top: 15px;
+            text-align: right;
+        }
+        .action-btn button {
+            margin-left: 8px;
+        }
+        /* 我的接单区域样式 */
+        #courier-my-orders {
+            margin-top: 40px;
+        }
+        #courier-my-orders h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .tab-content {
+                padding: 15px;
+            }
+            .order-item {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>快取-代拿快递外卖平台</h1>
+            <p>一键发布需求，轻松代拿快递外卖</p >
+        </header>
+        <div class="tabs">
+            <div class="tab active" data-tab="user">用户下单</div>
+            <div class="tab" data-tab="courier">代取员中心</div>
+        </div>
+        <!-- 用户下单面板 -->
+        <div class="tab-content active" id="user">
+            <h2>发布代拿需求</h2>
+            <form id="user-order-form">
+                <div class="form-group">
+                    <label for="user-phone">手机号</label>
+                    <input type="tel" id="user-phone" placeholder="请输入手机号" required>
+                </div>
+                <div class="form-group">
+                    <label for="service-type">服务类型</label>
+                    <select id="service-type" required>
+                        <option value="express">快递代拿</option>
+                        <option value="takeaway">外卖代取</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="pick-address">取件地址</label>
+                    <input type="text" id="pick-address" placeholder="请输入取件地址（如：学校东门快递柜A123）" required>
+                </div>
+                <div class="form-group">
+                    <label for="deliver-address">送达地址</label>
+                    <input type="text" id="deliver-address" placeholder="请输入送达地址（如：3号宿舍楼201室）" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">代拿费用（元）</label>
+                    <input type="number" id="price" placeholder="请输入代拿费用" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">备注信息</label>
+                    <textarea id="description" placeholder="如：快递取件码、外卖单号、物品重量等"></textarea>
+                </div>
+                <button type="submit">发布需求</button>
+            </form>
+
+            <!-- 用户我的订单 -->
+            <h2 style="margin-top: 40px;">我的订单</h2>
+            <div class="order-list" id="user-order-list">
+                <!-- 用户订单列表将在这里显示 -->
+            </div>
+        </div>
+
+        <!-- 代取员中心面板 -->
+        <div class="tab-content" id="courier">
+            <h2>待接单列表</h2>
+            <div class="order-list" id="courier-order-list">
+                <!-- 代取员待接订单列表 -->
+            </div>
+
+            <!-- 代取员我的接单 -->
+            <div id="courier-my-orders">
+                <h2>我的接单</h2>
+                <div class="order-list" id="courier-my-order-list">
+                    <!-- 代取员已接订单列表 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局订单数据存储（模拟数据库）
+        let allOrders = [];
+        // 代取员已接订单
+        let courierAcceptedOrders = [];
+
+        // 标签切换
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === tabId) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // 辅助函数：根据订单ID查找订单
+        function findOrderById(orderId) {
+            return allOrders.find(order => order.orderId === orderId);
+        }
+
+        // 辅助函数：渲染用户订单
+        function renderUserOrder(order) {
+            const userOrderList = document.getElementById('user-order-list');
+            const orderItem = document.createElement('div');
+            orderItem.className = 'order-item';
+            orderItem.dataset.orderId = order.orderId;
+
+            // 状态文本映射
+            const statusTextMap = {
+                pending: '待接单',
+                accepted: '已接单',
+                completed: '已完成',
+                waitConfirm: '待确认完成'
+            };
+
+            // 状态样式映射
+            const statusClassMap = {
+                pending: 'status-pending',
+                accepted: 'status-accepted',
+                completed: 'status-completed',
+                waitConfirm: 'status-wait-confirm'
+            };
+
+            // 操作按钮
+            let actionBtn = '';
+            if (order.status === 'pending') {
+                actionBtn = `<button onclick="cancelOrder(${order.orderId})">取消订单</button>`;
+            } else if (order.status === 'waitConfirm') {
+                actionBtn = `<button class="complete-btn" onclick="confirmOrder(${order.orderId})">确认完成</button>`;
+            } else {
+                actionBtn = `<span style="color: #7f8c8d;">${order.status === 'completed' ? '订单完成' : '配送中'}</span>`;
+            }
+
+            orderItem.innerHTML = `
+                <h3>订单ID：${order.orderId} <span class="status ${statusClassMap[order.status]}">${statusTextMap[order.status]}</span></h3>
+                <div class="order-info"><strong>服务类型：</strong>${order.serviceTypeName}</div>
+                <div class="order-info"><strong>取件地址：</strong>${order.pickAddress}</div>
+                <div class="order-info"><strong>送达地址：</strong>${order.deliverAddress}</div>
+                <div class="order-info"><strong>代拿费用：</strong>${order.price}元</div>
+                <div class="order-info"><strong>联系电话：</strong>${order.phone}</div>
+                <div class="order-info"><strong>备注：</strong>${order.description || '无'}</div>
+                <div class="action-btn">${actionBtn}</div>
+            `;
+
+            // 先移除旧订单（避免重复）
+            const oldOrder = userOrderList.querySelector(`[data-order-id="${order.orderId}"]`);
+            if (oldOrder) oldOrder.remove();
+
+            userOrderList.appendChild(orderItem);
+        }
+
+        // 辅助函数：渲染代取员订单（待接/已接）
+        function renderCourierOrder(order, container, isAccepted = false) {
+            const orderItem = document.createElement('div');
+            orderItem.className = 'order-item';
+            orderItem.dataset.orderId = order.orderId;
+
+            // 状态文本映射
+            const statusTextMap = {
+                pending: '待接单',
+                accepted: '已接单',
+                completed: '已完成',
+                waitConfirm: '待用户确认'
+            };
+
+            // 状态样式映射
+            const statusClassMap = {
+                pending: 'status-pending',
+                accepted: 'status-accepted',
+                completed: 'status-completed',
+                waitConfirm: 'status-wait-confirm'
+            };
+
+            // 操作按钮
+            let actionBtn = '';
+            if (!isAccepted) {
+                actionBtn = `<button onclick="acceptOrder(${order.orderId})">我要接单</button>`;
+            } else {
+                if (order.status === 'accepted') {
+                    actionBtn = `<button class="complete-btn" onclick="finishDelivery(${order.orderId})">完成配送</button>`;
+                } else {
+                    actionBtn = `<span style="color: #27ae60;">${order.status === 'completed' ? '订单完成' : '待用户确认'}</span>`;
+                }
+            }
+
+            orderItem.innerHTML = `
+                <h3>订单ID：${order.orderId} <span class="status ${statusClassMap[order.status]}">${statusTextMap[order.status]}</span></h3>
+                <div class="order-info"><strong>服务类型：</strong>${order.serviceTypeName}</div>
+                <div class="order-info"><strong>取件地址：</strong>${order.pickAddress}</div>
+                <div class="order-info"><strong>送达地址：</strong>${order.deliverAddress}</div>
+                <div class="order-info"><strong>代拿费用：</strong>${order.price}元</div>
+                <div class="order-info"><strong>联系电话：</strong>${order.phone}</div>
+                <div class="order-info"><strong>备注：</strong>${order.description || '无'}</div>
+                <div class="action-btn">${actionBtn}</div>
+            `;
+
+            // 先移除旧订单（避免重复）
+            const oldOrder = container.querySelector(`[data-order-id="${order.orderId}"]`);
+            if (oldOrder) oldOrder.remove();
+
+            container.appendChild(orderItem);
+        }
+        // 用户下单表单提交
+        const userOrderForm = document.getElementById('user-order-form');
+        userOrderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // 获取表单数据
+            const phone = document.getElementById('user-phone').value;
+            const serviceType = document.getElementById('service-type').value;
+            const pickAddress = document.getElementById('pick-address').value;
+            const deliverAddress = document.getElementById('deliver-address').value;
+            const price = document.getElementById('price').value;
+            const description = document.getElementById('description').value;
+            
+            // 生成订单ID
+            const orderId = Date.now();
+            const serviceTypeName = serviceType === 'express' ? '快递代拿' : '外卖代取';
+            
+            // 构建订单对象
+            const newOrder = {
+                orderId,
+                phone,
+                serviceType,
+                serviceTypeName,
+                pickAddress,
+                deliverAddress,
+                price,
+                description,
+                status: 'pending' // pending:待接单, accepted:已接单, waitConfirm:待确认完成, completed:已完成
+            };
+            
+            // 保存订单数据
+            allOrders.push(newOrder);
+            
+            // 渲染用户订单
+            renderUserOrder(newOrder);
+            
+            // 渲染到代取员待接单列表
+            const courierOrderList = document.getElementById('courier-order-list');
+            renderCourierOrder(newOrder, courierOrderList);
+            
+            // 重置表单
+            userOrderForm.reset();
+            
+            alert(`订单发布成功！订单ID：${orderId}`);
+        });
+
+        // 用户取消订单
+        function cancelOrder(orderId) {
+            // 更新订单数据
+            const orderIndex = allOrders.findIndex(order => order.orderId === orderId);
+            if (orderIndex === -1) return;
+            
+            // 从全局订单中删除
+            allOrders.splice(orderIndex, 1);
+            
+            // 从代取员已接订单中删除（如果已被接单）
+            const courierOrderIndex = courierAcceptedOrders.findIndex(order => order.orderId === orderId);
+            if (courierOrderIndex !== -1) {
+                courierAcceptedOrders.splice(courierOrderIndex, 1);
+                // 更新代取员我的接单列表
+                updateCourierMyOrders();
+            }
+            
+            // 移除用户订单元素
+            const userOrderItem = document.querySelector(`#user-order-list [data-order-id="${orderId}"]`);
+            if (userOrderItem) userOrderItem.remove();
+            
+            // 移除代取员待接订单元素
+            const courierOrderItem = document.querySelector(`#courier-order-list [data-order-id="${orderId}"]`);
+            if (courierOrderItem) courierOrderItem.remove();
+            
+            alert(`订单 ${orderId} 已取消`);
+        }
+
+        // 代取员接单
+        function acceptOrder(orderId) {
+            const order = findOrderById(orderId);
+            if (!order || order.status !== 'pending') return;
+            
+            // 更新订单状态
+            order.status = 'accepted';
+            
+            // 添加到代取员已接订单
+            courierAcceptedOrders.push(order);
+            
+            // 从代取员待接列表移除
+            const courierOrderItem = document.querySelector(`#courier-order-list [data-order-id="${orderId}"]`);
+            if (courierOrderItem) courierOrderItem.remove();
+            
+            // 渲染到代取员我的接单列表
+            const courierMyOrderList = document.getElementById('courier-my-order-list');
+            renderCourierOrder(order, courierMyOrderList, true);
+            
+            // 更新用户端订单状态
+            renderUserOrder(order);
+            
+            alert(`成功接下订单 ${orderId}！\n取件地址：${order.pickAddress}\n联系电话：${order.phone}`);
+        }
+
+        // 代取员完成配送
+        function finishDelivery(orderId) {
+            const order = findOrderById(orderId);
+            if (!order || order.status !== 'accepted') return;
+            
+            // 更新订单状态为待用户确认
+            order.status = 'waitConfirm';
+            
+            // 更新代取员我的接单列表
+            updateCourierMyOrders();
+            
+            // 更新用户端订单状态
+            renderUserOrder(order);
+            
+            alert(`订单 ${orderId} 已完成配送，请等待用户确认`);
+        }
+
+        // 用户确认订单完成
+        function confirmOrder(orderId) {
+            const order = findOrderById(orderId);
+            if (!order || order.status !== 'waitConfirm') return;
+            
+            // 更新订单状态为已完成
+            order.status = 'completed';
+            
+            // 更新代取员我的接单列表
+            updateCourierMyOrders();
+            
+            // 更新用户端订单状态
+            renderUserOrder(order);
+            
+            alert(`订单 ${orderId} 已确认完成，感谢使用快取服务！`);
+        }
+
+        // 更新代取员我的接单列表
+        function updateCourierMyOrders() {
+            const courierMyOrderList = document.getElementById('courier-my-order-list');
+            // 清空列表
+            courierMyOrderList.innerHTML = '';
+            // 重新渲染所有已接订单
+            courierAcceptedOrders.forEach(order => {
+                renderCourierOrder(order, courierMyOrderList, true);
+            });
+        }
+
+        // 初始化：添加模拟订单（可选）
+        function initSampleOrders() {
+            const sampleOrders = [
+                {
+                    orderId: 1699999999999,
+                    phone: "138****1234",
+                    serviceType: "express",
+                    serviceTypeName: "快递代拿",
+                    pickAddress: "学校东门快递柜A123",
+                    deliverAddress: "3号宿舍楼201室",
+                    price: 5,
+                    description: "取件码：8866",
+                    status: "pending"
+                },
+                {
+                    orderId: 1700000000000,
+                    phone: "139****5678",
+                    serviceType: "takeaway",
+                    serviceTypeName: "外卖代取",
+                    pickAddress: "校门口麦当劳",
+                    deliverAddress: "5号教学楼302教室",
+                    price: 3,
+                    description: "外卖单号：MT12345678",
+                    status: "pending"
+                }
+            ];
+            
+            allOrders = [...sampleOrders];
+            
+            // 渲染到代取员待接列表
+            const courierOrderList = document.getElementById('courier-order-list');
+            sampleOrders.forEach(order => {
+                renderCourierOrder(order, courierOrderList);
+            });
+        }
+
+        // 页面加载完成后初始化
+        window.onload = initSampleOrders;
+    </script>
+</body>
+</html>
