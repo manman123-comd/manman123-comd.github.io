@@ -537,18 +537,18 @@
           const card = document.createElement("div");
           card.className = "product-card";
           card.innerHTML = `
-            <div class="product-img-container">
-              < img class="product-img" src="${product.imageUrl}" alt="${product.title}">
-            </div>
-            <div class="product-info">
-              <span class="product-category">${product.category}</span>
-              <h3 class="product-title">${product.title}</h3>
-              <div class="product-price">￥${product.price.toFixed(2)}</div>
-              <div class="product-contact">📞 ${product.contact}</div> <!-- 显示联系方式 -->
-              <div class="product-desc">${product.description || "无描述"}</div>
-              <button class="delete-btn" data-id="${product.id}">删除商品</button>
-            </div>
-          `;
+              <div class="product-img-container">
+                <img class="product-img" src="${product.imageUrl}" alt="${product.title}">
+              </div>
+              <div class="product-info">
+                <span class="product-category">${product.category}</span>
+                <h3 class="product-title">${product.title}</h3>
+                <div class="product-price">￥${product.price.toFixed(2)}</div>
+                <div class="product-contact">📞 ${product.contact}</div> <!-- 显示联系方式 -->
+                <div class="product-desc">${product.description || "无描述"}</div>
+                <button class="delete-btn" data-id="${product.id}">删除商品</button>
+              </div>
+            `;
           listContainer.appendChild(card);
         });
       }
