@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>商品发布API</title>
+</head>
+<body>
+<script type="text/javascript">
+async function getPostData() {
+  const method = window.location.search.slice(1) || "GET";
+  if (method === "POST") {
+    try {
+      const body = await new Response(document.body).text();
+      return JSON.parse(body) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+  return {};
+}
+
+const goodsId = "xzl" + Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+const publishTime = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+getPostData().then(data => {
+  const response = data.title && data.category 
+    ? {
+        "status": "success",
+        "data": { goodsId, publishTime },
+        "message": "闲置商品发布成功"
+      }
+    : {
+        "status": "fail",
+        "data": {},
+        "message": "发布失败，请填写商品标题和分类"
+      };
+  document.body.innerHTML = JSON.stringify(response);
+});
+</script>
+</body>
+</html>
