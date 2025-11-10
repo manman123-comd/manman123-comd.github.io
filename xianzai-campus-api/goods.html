@@ -148,7 +148,7 @@
             currentPage = page;
 
             const { count } = await supabase
-                .from('campus_goods')
+                .from('campus-goods')
                 .select('*', { count: 'exact', head: true });
 
             const totalPages = Math.ceil(count / itemsPerPage);
