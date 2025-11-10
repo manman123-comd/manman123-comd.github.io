@@ -123,7 +123,7 @@
             const description = document.getElementById('description').value;
 
             const { data, error } = await supabase
-                .from('campus_goods')
+                .from('campus-goods')
                 .insert([{
                     title,
                     category,
