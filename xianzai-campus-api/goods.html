@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>商品列表API</title>
+</head>
+<body>
+<script type="text/javascript">
+function getParam(name) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(name) || "";
+}
+const category = getParam("category") || "全部分类";
+const page = parseInt(getParam("page")) || 1;
+
+const goodsData = [
+  {
+    "goodsId": "xzl001",
+    "title": "九成新无线鼠标",
+    "category": "电子数码",
+    "price": 35.00,
+    "contact": "wx123456",
+    "description": "使用半年，无故障，续航持久",
+    "imgUrl": "https://picsum.photos/200/200?mouse",
+    "publishTime": "2025-11-10 14:30:00"
+  },
+  {
+    "goodsId": "xzl002",
+    "title": "考研英语真题（含解析）",
+    "category": "学习资料",
+    "price": 20.00,
+    "contact": "wx654321",
+    "description": "2024版，几乎全新，无笔记",
+    "imgUrl": "https://picsum.photos/200/200?book",
+    "publishTime": "2025-11-10 15:10:00"
+  }
+];
+
+const filteredGoods = category === "全部分类" 
+  ? goodsData 
+  : goodsData.filter(item => item.category === category);
+
+const response = {
+  "status": "success",
+  "data": {
+    "total": filteredGoods.length,
+    "page": page,
+    "pageSize": 10,
+    "goodsList": filteredGoods,
+    "category": category
+  },
+  "message": filteredGoods.length > 0 ? "商品查询成功" : "暂无商品发布，快来发布第一个商品吧！"
+};
+document.body.innerHTML = JSON.stringify(response);
+</script>
+</body>
+</html>
