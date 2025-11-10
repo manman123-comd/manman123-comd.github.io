@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布商品</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #27ae60;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>发布商品</h1>
+        <form id="publish-form">
+            <div class="form-group">
+                <label for="title">商品标题</label>
+                <input type="text" id="title" required>
+            </div>
+            <div class="form-group">
+                <label for="category">分类</label>
+                <select id="category" required>
+                    <option value="">请选择分类</option>
+                    <option value="电子产品">电子产品</option>
+                    <option value="学习资料">学习资料</option>
+                    <option value="衣服鞋帽">衣服鞋帽</option>
+                    <option value="生活用品">生活用品</option>
+                    <option value="运动器材">运动器材</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="price">价格</label>
+                <input type="number" id="price" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="contact">联系方式</label>
+                <input type="text" id="contact" required>
+            </div>
+            <div class="form-group">
+                <label for="img-url">图片URL</label>
+                <input type="url" id="img-url" placeholder="可选">
+            </div>
+            <div class="form-group">
+                <label for="description">商品描述</label>
+                <textarea id="description" required></textarea>
+            </div>
+            <button type="submit">发布</button>
+            <a href="goods.html" class="back-link">返回商品列表</a>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        const supabaseUrl = 'https://empuqkgcaqhclasltqkw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtcHVxa2djYXFoY2xhc2x0cWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NTQ1OTYsImV4cCI6MjA3ODMzMDU5Nn0.BZIlW4x4fGiIQYvdhTUFAXxhE0-Zohs5_Kr3HoxjHSg';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        const form = document.getElementById('publish-form');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const category = document.getElementById('category').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const contact = document.getElementById('contact').value;
+            const imgUrl = document.getElementById('img-url').value || null;
+            const description = document.getElementById('description').value;
+
+            const { data, error } = await supabase
+                .from('campus.goods')
+                .insert([{
+                    title,
+                    category,
+                    price,
+                    contact,
+                    img_url: imgUrl,
+                    description,
+                    publish_time: new Date().toISOString()
+                }]);
+
+            if (error) {
+                alert('发布失败: ' + error.message);
+                console.error('Error inserting data:', error);
+            } else {
+                alert('发布成功!');
+                form.reset();
+            }
+        });
+    </script>
+</body>
+</html>
